@@ -1,0 +1,12 @@
+id = "wt_humanoid"
+name = "Humanoid"
+version = "0.1.0"
+author = "WiTwin Team"
+description = "Humanoid model prefab for scene creation"
+homepage = ""
+repository = "https://github.com/witwin-ai/wt-humanoid"
+license = "MIT"
+dependencies = []
+entry_point = "__init__.py"
+icon = "user"
+enabled = false
