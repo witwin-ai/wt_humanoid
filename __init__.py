@@ -7,3 +7,4 @@ Usage:
 """
 # Import library items to trigger registration
 from . import library_items
+from . import components
