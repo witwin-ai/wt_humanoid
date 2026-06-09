@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
+from scipy.spatial.transform import Rotation
+
 from witwin_server.core.components import (
     Component,
     button,
@@ -54,6 +56,7 @@ class SMPLBodyComponent(Component):
         self.root_translation = frame["translation"]
         self.source_path = frame.get("source_path", self.source_path)
         self.sync_platform_geometry()
+        self.sync_skinned_mesh_pose()
 
     def sync_platform_geometry(self) -> None:
         """Mirror current SMPL params to a sibling generic PlatformGeometry if present."""
@@ -69,6 +72,36 @@ class SMPLBodyComponent(Component):
         geom.shape = params["shape"]
         geom.gender = params["gender"]
         geom.model_root = params["model_root"]
+
+    def sync_skinned_mesh_pose(self) -> None:
+        """Mirror current SMPL pose into sibling SkinnedMesh bone transforms."""
+        owner = getattr(self, "owner", None)
+        if owner is None:
+            return
+        scene = getattr(owner, "scene", None)
+        if scene is None:
+            return
+        skinned = owner.get_component("SkinnedMesh")
+        if skinned is None:
+            return
+
+        pose = [float(value) for value in (self.pose or [])]
+        for bone_index, bone_id in enumerate(skinned.bone_ids):
+            bone_obj = scene.get_object(bone_id)
+            if bone_obj is None:
+                continue
+            transform = bone_obj.get_component("Transform")
+            if transform is None:
+                continue
+            if bone_index == 0:
+                transform.set_quaternion([0.0, 0.0, 0.0, 1.0])
+                continue
+            start = bone_index * 3
+            rotvec = pose[start : start + 3]
+            if len(rotvec) != 3:
+                transform.set_quaternion([0.0, 0.0, 0.0, 1.0])
+                continue
+            transform.set_quaternion(Rotation.from_rotvec(rotvec).as_quat().tolist())
 
 
 @component(name="SMPLMotion", display_name="SMPL Motion", category=_CAT)
