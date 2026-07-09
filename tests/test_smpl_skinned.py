@@ -5,6 +5,19 @@ import numpy as np
 import pytest
 
 
+def test_chumpy_compat_patch_restores_removed_numpy_and_inspect_aliases():
+    import inspect
+    from wt_humanoid.adapter.smpl_skinned import _apply_chumpy_compat
+
+    _apply_chumpy_compat()
+
+    assert np.int is int
+    assert np.float is float
+    assert np.object is object
+    assert hasattr(inspect, "getargspec")
+    assert hasattr(inspect, "ArgSpec")
+
+
 def _tiny_skin_asset():
     from wt_humanoid.adapter.smpl_skinned import SMPLSkinAsset
 
@@ -73,6 +86,9 @@ def test_attach_smpl_skinned_mesh_creates_bones_and_skinning_data():
     assert skinned.bone_ids == result["bone_ids"]
     assert skinned.root_bone_id == result["bone_ids"][0]
     assert skinned.get_mesh_data()["faces"] == [[0, 1, 2]]
+    assert skinned.source["type"] == "generated_mesh"
+    assert skinned.source["storage"] == "runtime"
+    assert skinned.show_bones is False
 
     root_bone = scene.get_object(result["bone_ids"][0])
     child_bone = scene.get_object(result["bone_ids"][1])

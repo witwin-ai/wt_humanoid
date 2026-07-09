@@ -4,6 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
+import inspect
+from collections import namedtuple
 
 import numpy as np
 
@@ -31,6 +33,7 @@ def build_smpl_skin_asset(
     betas: Sequence[float] | None = None,
 ) -> SMPLSkinAsset:
     """Load an SMPL model and return bind-pose mesh data for GPU skinning."""
+    _apply_chumpy_compat()
     try:
         import torch
         import smplx
@@ -72,6 +75,32 @@ def build_smpl_skin_asset(
     )
 
 
+def _apply_chumpy_compat() -> None:
+    """Patch removed NumPy/inspect aliases needed by legacy chumpy SMPL pickles."""
+    for name, value in {
+        "bool": bool,
+        "int": int,
+        "float": float,
+        "complex": complex,
+        "object": object,
+        "unicode": str,
+        "str": str,
+    }.items():
+        if name not in np.__dict__:
+            setattr(np, name, value)
+
+    arg_spec = namedtuple("ArgSpec", "args varargs keywords defaults")
+
+    def getargspec(func):
+        spec = inspect.getfullargspec(func)
+        return arg_spec(spec.args, spec.varargs, spec.varkw, spec.defaults)
+
+    if not hasattr(inspect, "ArgSpec"):
+        inspect.ArgSpec = arg_spec
+    if not hasattr(inspect, "getargspec"):
+        inspect.getargspec = getargspec
+
+
 def attach_smpl_skinned_mesh(
     scene: Any,
     body_obj: SceneObject,
@@ -107,6 +136,8 @@ def attach_smpl_skinned_mesh(
         skin_asset.inverse_bind_matrices,
         root_bone_id=bone_ids[0] if bone_ids else None,
     )
+    skinned.show_bones = False
+    skinned.set_generated_mesh_source_runtime(f"{body_obj.id}:smpl")
     skinned.start()
 
     return {

@@ -1,16 +1,26 @@
 """Integration test for wt_humanoid against real licensed SMPL model files."""
 import inspect
 import os
+from collections import namedtuple
 
 import numpy as np
 import pytest
+
+_ArgSpec = namedtuple("ArgSpec", "args varargs keywords defaults")
+
+
+def _getargspec(func):
+    spec = inspect.getfullargspec(func)
+    return _ArgSpec(spec.args, spec.varargs, spec.varkw, spec.defaults)
 
 
 def _patch_chumpy_py311():
     # chumpy still calls inspect.getargspec on modern Python. Patch only inside
     # this integration boundary so normal application code stays untouched.
+    if not hasattr(inspect, "ArgSpec"):
+        inspect.ArgSpec = _ArgSpec
     if not hasattr(inspect, "getargspec"):
-        inspect.getargspec = inspect.getfullargspec
+        inspect.getargspec = _getargspec
 
 
 @pytest.mark.integration

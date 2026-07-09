@@ -9,4 +9,4 @@ license = "MIT"
 dependencies = []
 entry_point = "__init__.py"
 icon = "user"
-enabled = false
+enabled = true

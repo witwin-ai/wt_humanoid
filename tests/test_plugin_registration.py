@@ -1,4 +1,13 @@
 """wt_humanoid registers SMPL components and exports platform-compatible params."""
+from pathlib import Path
+
+from witwin_server.plugins.loader import PluginManifest
+
+
+def test_manifest_is_enabled_by_default():
+    manifest = PluginManifest.from_file(Path(__file__).resolve().parents[1] / "witwin.toml")
+
+    assert manifest.enabled is True
 
 
 def test_plugin_import_registers_smpl_components():
@@ -13,9 +22,10 @@ def test_plugin_import_registers_smpl_components():
 
 def test_plugin_registers_humanoid_library_items():
     import wt_humanoid  # noqa: F401
-    from witwin_server.features.library.service import _pending_items
+    from witwin_server.features.library.service import LibraryHandler, _pending_items
 
-    item_ids = set(_pending_items)
+    instance = LibraryHandler._instance
+    item_ids = set(instance.items if instance is not None else _pending_items)
 
     assert "humanoid" in item_ids
     assert "smpl_body" in item_ids
