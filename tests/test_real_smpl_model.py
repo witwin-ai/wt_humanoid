@@ -1,26 +1,24 @@
 """Integration test for wt_humanoid against real licensed SMPL model files."""
-import inspect
 import os
-from collections import namedtuple
 
 import numpy as np
 import pytest
 
-_ArgSpec = namedtuple("ArgSpec", "args varargs keywords defaults")
 
+@pytest.mark.integration
+def test_builds_skinned_mesh_from_official_neutral_model_without_chumpy():
+    model_root = os.environ.get("WITWIN_SMPL_MODEL_ROOT")
+    if not model_root:
+        pytest.skip("Set WITWIN_SMPL_MODEL_ROOT to a directory containing SMPL .pkl model files.")
 
-def _getargspec(func):
-    spec = inspect.getfullargspec(func)
-    return _ArgSpec(spec.args, spec.varargs, spec.varkw, spec.defaults)
+    from wt_humanoid.adapter.smpl_skinned import build_smpl_skin_asset
 
+    asset = build_smpl_skin_asset(model_root, gender="neutral")
 
-def _patch_chumpy_py311():
-    # chumpy still calls inspect.getargspec on modern Python. Patch only inside
-    # this integration boundary so normal application code stays untouched.
-    if not hasattr(inspect, "ArgSpec"):
-        inspect.ArgSpec = _ArgSpec
-    if not hasattr(inspect, "getargspec"):
-        inspect.getargspec = _getargspec
+    assert asset.vertices.shape == (6890, 3)
+    assert asset.faces.shape == (13776, 3)
+    assert asset.skin_indices.shape == (6890, 4)
+    assert asset.joint_positions.shape == (24, 3)
 
 
 @pytest.mark.integration
@@ -28,8 +26,6 @@ def test_smpl_motion_frame_bakes_with_real_smpl_model_files(tmp_path):
     model_root = os.environ.get("WITWIN_SMPL_MODEL_ROOT")
     if not model_root:
         pytest.skip("Set WITWIN_SMPL_MODEL_ROOT to a directory containing SMPL .pkl model files.")
-
-    _patch_chumpy_py311()
 
     from witwin_server.core.components import PlatformGeometryComponent
     from witwin_server.features.platform.bridge import GeometryMap
@@ -61,6 +57,7 @@ def test_smpl_motion_frame_bakes_with_real_smpl_model_files(tmp_path):
     motion.current_frame = 1
     motion.apply_current_frame(body)
 
+    pytest.importorskip("smplpytorch.pytorch.smpl_layer")
     platform_body = GeometryMap.to_platform(
         geom,
         position=[0.0, 0.0, 0.0],

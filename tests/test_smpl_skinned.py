@@ -5,17 +5,27 @@ import numpy as np
 import pytest
 
 
-def test_chumpy_compat_patch_restores_removed_numpy_and_inspect_aliases():
-    import inspect
-    from wt_humanoid.adapter.smpl_skinned import _apply_chumpy_compat
+def test_smpl_skin_loader_uses_shared_chumpy_free_model_reader(monkeypatch, tmp_path):
+    import types
+    import wt_humanoid.adapter.smpl_skinned as smpl_skinned
 
-    _apply_chumpy_compat()
+    captured = {}
 
-    assert np.int is int
-    assert np.float is float
-    assert np.object is object
-    assert hasattr(inspect, "getargspec")
-    assert hasattr(inspect, "ArgSpec")
+    def load(path):
+        captured["path"] = path
+        return {"shapedirs": np.zeros((1, 1, 1))}
+
+    class Struct:
+        def __init__(self, **kwargs):
+            self.values = kwargs
+
+    monkeypatch.setattr(smpl_skinned, "load_smpl_model_data", load)
+    result = smpl_skinned._load_smpl_data_struct(
+        tmp_path, "neutral", types.SimpleNamespace(utils=types.SimpleNamespace(Struct=Struct))
+    )
+
+    assert captured["path"] == tmp_path / "smpl" / "SMPL_NEUTRAL.pkl"
+    assert result.values["shapedirs"].shape == (1, 1, 1)
 
 
 def _tiny_skin_asset():
