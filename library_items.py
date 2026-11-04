@@ -5,7 +5,7 @@ Registers the humanoid model as a library item that can be
 dragged into the scene from the Library panel.
 """
 from pathlib import Path
-from witwin_server import Library, SceneObject
+from witwin_server.api import Library, SceneObject
 
 # Get the path to the model file (relative to this plugin)
 PLUGIN_DIR = Path(__file__).parent
@@ -14,7 +14,7 @@ _CATEGORY = "basic"
 
 
 def _make_smpl_body(ctx):
-    from witwin_server.core.components import PlatformGeometryComponent
+    from witwin_server.api import PlatformGeometryComponent
 
     from .components.smpl import SMPLBodyComponent
 

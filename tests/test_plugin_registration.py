@@ -1,20 +1,18 @@
 """wt_humanoid registers SMPL components and exports platform-compatible params."""
 from pathlib import Path
 
-from witwin_server.plugins.loader import PluginManifest
+from witwin_server.api import testing
 
 
 def test_manifest_is_enabled_by_default():
-    manifest = PluginManifest.from_file(Path(__file__).resolve().parents[1] / "witwin.toml")
+    manifest = testing.read_manifest(Path(__file__).resolve().parents[1] / "witwin.toml")
 
     assert manifest.enabled is True
 
 
 def test_plugin_import_registers_smpl_components():
     import wt_humanoid  # noqa: F401
-    from witwin_server.core.components import ABCComponentMeta
-
-    registry = ABCComponentMeta.get_registry()
+    registry = testing.component_types()
 
     assert "SMPLBody" in registry
     assert "SMPLMotion" in registry
@@ -22,10 +20,7 @@ def test_plugin_import_registers_smpl_components():
 
 def test_plugin_registers_humanoid_library_items():
     import wt_humanoid  # noqa: F401
-    from witwin_server.features.library.service import LibraryHandler, _pending_items
-
-    instance = LibraryHandler._instance
-    item_ids = set(instance.items if instance is not None else _pending_items)
+    item_ids = testing.library_item_ids()
 
     assert "humanoid" in item_ids
     assert "smpl_body" in item_ids
@@ -51,8 +46,7 @@ def test_smpl_body_exports_platform_geometry_params():
 
 
 def test_smpl_body_syncs_sibling_platform_geometry():
-    from witwin_server import SceneObject
-    from witwin_server.core.components import PlatformGeometryComponent
+    from witwin_server.api import SceneObject, PlatformGeometryComponent
     from wt_humanoid.components.smpl import SMPLBodyComponent
 
     obj = SceneObject(name="Human", mesh_type="Empty")

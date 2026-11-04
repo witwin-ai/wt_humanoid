@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 from scipy.spatial.transform import Rotation
 
-from witwin_server.core.components import (
+from witwin_server.api import (
     Component,
     button,
     component,

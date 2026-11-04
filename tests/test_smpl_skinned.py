@@ -76,8 +76,7 @@ def _tiny_skin_asset():
 
 
 def test_attach_smpl_skinned_mesh_creates_bones_and_skinning_data():
-    from witwin_server.core import SceneObject
-    from witwin_server.core.scene import Scene
+    from witwin_server.api import SceneObject, Scene
     from wt_humanoid.adapter.smpl_skinned import attach_smpl_skinned_mesh
     from wt_humanoid.components.smpl import SMPLBodyComponent
 
@@ -110,8 +109,7 @@ def test_attach_smpl_skinned_mesh_creates_bones_and_skinning_data():
 
 
 def test_smpl_body_frame_updates_skinned_bone_rotations():
-    from witwin_server.core import SceneObject
-    from witwin_server.core.scene import Scene
+    from witwin_server.api import SceneObject, Scene
     from wt_humanoid.adapter.smpl_skinned import attach_smpl_skinned_mesh
     from wt_humanoid.components.smpl import SMPLBodyComponent
 

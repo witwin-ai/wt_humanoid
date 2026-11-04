@@ -8,8 +8,7 @@ from typing import Any, Sequence
 import numpy as np
 
 from witwin.genesis.smpl_pickle import load_smpl_model_data
-from witwin_server.core import SceneObject
-from witwin_server.core.components import SkinnedMeshComponent
+from witwin_server.api import SceneObject, SkinnedMeshComponent
 
 
 @dataclass(frozen=True)

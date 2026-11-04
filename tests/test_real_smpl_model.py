@@ -27,8 +27,7 @@ def test_smpl_motion_frame_bakes_with_real_smpl_model_files(tmp_path):
     if not model_root:
         pytest.skip("Set WITWIN_SMPL_MODEL_ROOT to a directory containing SMPL .pkl model files.")
 
-    from witwin_server.core.components import PlatformGeometryComponent
-    from witwin_server.features.platform.bridge import GeometryMap
+    from witwin_server.api import PlatformGeometryComponent, GeometryMap
     from wt_humanoid.components.smpl import SMPLBodyComponent, SMPLMotionComponent
 
     motion_path = tmp_path / "real_model_smoke_motion.npz"
