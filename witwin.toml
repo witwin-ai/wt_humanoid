@@ -10,3 +10,6 @@ dependencies = []
 entry_point = "__init__.py"
 icon = "user"
 enabled = true
+
+[engines]
+witwin = "^2.0.0"
