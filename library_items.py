@@ -5,7 +5,26 @@ Registers the humanoid model as a library item that can be
 dragged into the scene from the Library panel.
 """
 from pathlib import Path
+import inspect as _inspect
+from pathlib import Path as _Path
+
 from witwin_server import Library, SceneObject
+
+
+_PREVIEWS = _Path(__file__).resolve().parent / "previews" / "library"
+
+
+def _preview(item_id):
+    """The Library card image for an item, as keyword arguments.
+
+    Images are renders from Studio's `scripts/template-previews/library_items.py`.
+    Empty when the file is missing or Studio's `register_item` has no `preview`
+    parameter yet (older Studio), so the card falls back to the item's icon.
+    """
+    path = _PREVIEWS / f"{item_id}.webp"
+    if not path.is_file() or "preview" not in _inspect.signature(Library.register_item).parameters:
+        return {}
+    return {"preview": str(path)}
 
 # Get the path to the model file (relative to this plugin)
 PLUGIN_DIR = Path(__file__).parent
@@ -45,7 +64,7 @@ Library.register_item(
     icon="person-standing",
     description="A rigged humanoid model with skeleton",
     model_path=str(MODEL_PATH),
-    object_type="mesh"
+    object_type="mesh", **_preview("humanoid")
 )
 
 Library.register_item(
@@ -55,7 +74,7 @@ Library.register_item(
     icon="person-standing",
     description="SMPL body parameters owned by wt_humanoid",
     object_type="empty",
-    factory=_make_smpl_body,
+    factory=_make_smpl_body, **_preview("smpl_body"),
 )
 
 Library.register_item(
@@ -65,5 +84,5 @@ Library.register_item(
     icon="activity",
     description="AMASS/SMPL .npz motion source that drives an SMPL Body",
     object_type="empty",
-    factory=_make_smpl_motion,
+    factory=_make_smpl_motion, **_preview("smpl_motion"),
 )
